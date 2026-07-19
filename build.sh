@@ -121,11 +121,22 @@ log "BBG included"
 wget -qO- "https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh" | bash
 sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' "security/Kconfig"
 
-if [ "$KSU" = "SKSU" ]; then
-  log "SukiSU-Ultra included"
-  if susfs_included; then
+if susfs_included; then
     #install_ksu "ahmed-alnassif/SukiSU-Ultra" "builtin"
     install_ksu "SukiSU-Ultra/SukiSU-Ultra" "builtin"
+
+    # === PIN SukiSU version code to 40796 (match manager v4.1.3) ===
+    # Makefile вычисляет KSU_VERSION из GitHub API (текущее число коммитов),
+    # поэтому оно уезжает вперёд и менеджер падает в safe mode. Фиксим числом.
+    KSU_MK="$(grep -rl 'VERSION_BASE := 40000' "$KSRC" | head -n1)"
+    if [ -n "$KSU_MK" ]; then
+      log "Pinning KSU_VERSION -> 40796 in $KSU_MK"
+      sed -i 's/^[[:space:]]*KSU_VERSION :=.*/KSU_VERSION := 40796/' "$KSU_MK"
+      sed -i 's/^[[:space:]]*VERSION_TAG :=.*/VERSION_TAG := 4.1.3/' "$KSU_MK"
+      grep -E '^(KSU_VERSION|VERSION_TAG) :=' "$KSU_MK"
+    else
+      log "!!! VERSION_BASE not found - version pin SKIPPED"
+    fi
   else
     install_ksu "SukiSU-Ultra/SukiSU-Ultra" "main"
   fi
