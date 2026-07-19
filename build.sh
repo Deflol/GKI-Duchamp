@@ -282,6 +282,8 @@ MAKE_ARGS=(
   CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
   -j$(nproc --all)
   O=$OUTDIR
+  KSU_VERSION=40796
+  VERSION_TAG=4.1.3
 )
 
 KERNEL_IMAGE="$OUTDIR/arch/arm64/boot/Image"
